@@ -24,7 +24,7 @@ describe("Weather Controller", function () {
         // we can also have deviceId for IOT devices in field
       },
     },
-    error = new Error({ error: "There is an error" }),
+    error,
     response = {},
     expected;
 
@@ -42,7 +42,7 @@ describe("Weather Controller", function () {
 
     it("should return Weather object", function () {
       expected = request.body;
-      sinon.stub(Weather, "create").returns(expected);
+      sinon.stub(Weather, "create").yields(null, expected);
       createWeather(request, response);
       sinon.assert.calledWith(Weather.create, request.body);
       sinon.assert.calledWith(
@@ -72,11 +72,17 @@ describe("Weather Controller", function () {
     });
 
     it("should return status 500 on server error", function () {
-      sinon.stub(Weather, "create").returns({ error: "Server Error" });
-      Weather.create(request, response);
+      sinon
+        .stub(Weather, "create")
+        .yields(new Error("Could not create weather")); // For the error message check mongoose documentation
+      createWeather(request, response);
       sinon.assert.calledWith(Weather.create, request.body);
       sinon.assert.calledWith(response.status, 500);
-      sinon.assert.calledOnce(res.status(500).json());
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ error: "Weather could not be created" })
+      );
+      sinon.assert.calledOnce(response.json);
     });
   });
   /* 

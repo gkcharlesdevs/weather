@@ -1,8 +1,14 @@
 const Weather = require("../models/Weather");
 
 exports.createWeather = (req, res) => {
-  const weather = Weather.create(req.body);
-  res.json(weather);
+  Weather.create(req.body, function (error, weather) {
+    if (error) {
+      res.status(500);
+      return res.json({ error: "Weather could not be created" });
+    } else {
+      return res.json(weather);
+    }
+  });
 };
 
 exports.getWeathers = (req, res) => {};
