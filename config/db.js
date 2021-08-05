@@ -1,6 +1,9 @@
 // config connenction to database
 const mongoose = require("mongoose");
 
+const User = require("../models/User");
+const Weather = require("../models/Weather");
+
 const connect = function () {
   mongoose.connect(
     process.env.MONGO_URI,

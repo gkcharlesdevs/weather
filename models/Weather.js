@@ -2,27 +2,27 @@ const mongoose = require("mongoose");
 
 const WeatherSchema = new mongoose.Schema({
   temperature: {
-    type: number,
+    type: Number,
     required: [true, "Please add temperature value"],
   },
   windSpeed: {
-    type: number,
+    type: Number,
     required: [true, "Please add windspeed"],
   },
   humidity: {
-    type: number,
+    type: Number,
     required: [true, "Please add humidity value"],
   },
   airpressure: {
-    type: number,
+    type: Number,
     required: [true, "Please add airpressure  value"],
   },
   city: {
-    type: string,
+    type: String,
     required: [true, "Please add city value"],
   },
   country: {
-    type: string,
+    type: String,
     required: [true, "Please add country value"],
   },
   createdAt: {
