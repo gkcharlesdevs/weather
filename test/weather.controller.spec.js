@@ -9,7 +9,7 @@ const {
 } = require("../controllers/weather");
 
 describe("Weather Controller", function () {
-  let req = {
+  let request = {
       body: {
         temperature: 34,
         windSpeed: 3.4,
@@ -25,35 +25,58 @@ describe("Weather Controller", function () {
       },
     },
     error = new Error({ error: "There is an error" }),
-    res = {},
-    expectedResult;
+    response = {},
+    expected;
 
   describe("createWeather", function () {
     beforeEach(function () {
-      res = {
+      response = {
         json: sinon.spy(),
-        status: sinon.stub().returns({ end: sinon.spy() }),
+        status: sinon.stub().returns(response),
       };
     });
 
-    it("should return created Weather obj", function () {
-      expectedResult = req.body;
-      sinon.stub(Vehicle, "create").yields(null, expectedResult);
-      Controller.create(req, res);
-      sinon.assert.calledWith(weather.save, req.body);
-      sinon.assert.calledWith(res.json, sinon.match({ model: req.body.model }));
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it("should return Weather object", function () {
+      expected = request.body;
+      sinon.stub(Weather, "create").returns(expected);
+      createWeather(request, response);
+      sinon.assert.calledWith(Weather.create, request.body);
       sinon.assert.calledWith(
-        res.json,
-        sinon.match({ manufacturer: req.body.manufacturer })
+        response.json,
+        sinon.match({ temperature: request.body.temperature })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ windSpeed: request.body.windSpeed })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ humidity: request.body.humidity })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ airpressure: request.body.airpressure })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ city: request.body.city })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ country: request.body.country })
       );
     });
 
     it("should return status 500 on server error", function () {
-      sinon.stub(Vehicle, "create").yields(error);
-      Controller.create(req, res);
-      sinon.assert.calledWith(Vehicle.create, req.body);
-      sinon.assert.calledWith(res.status, 500);
-      sinon.assert.calledOnce(res.status(500).end);
+      sinon.stub(Weather, "create").returns({ error: "Server Error" });
+      Weather.create(request, response);
+      sinon.assert.calledWith(Weather.create, request.body);
+      sinon.assert.calledWith(response.status, 500);
+      sinon.assert.calledOnce(res.status(500).json());
     });
   });
   /* 
