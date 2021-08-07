@@ -11,9 +11,21 @@ exports.createWeather = (req, res) => {
   });
 };
 
-exports.getWeathers = (req, res) => {};
+exports.getWeathers = (req, res) => {
+  Weather.find({}, (error, weather) => {
+    if (error) {
+      res.status(500);
+      return res.json({ error: "Server error unable to get list" });
+    } else {
+      res.status(200);
+      res.json(weather);
+    }
+  });
+};
 
-exports.getWeather = (req, res) => {};
+exports.getWeather = (req, res) => {
+  Weather.findById();
+};
 
 exports.updateWeather = (req, res) => {};
 

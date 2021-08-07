@@ -19,7 +19,7 @@ describe("Weather Controller", function () {
         country: "Germany",
       },
       params: {
-        id: "610b426aeff6df1d4ac0b25b",
+        zipcode: "610b426aeff6df1d4ac0b25b",
         userId: "610b40f23e4ec1192b526d79",
         // we can also have deviceId for IOT devices in field
       },
@@ -85,123 +85,154 @@ describe("Weather Controller", function () {
       sinon.assert.calledOnce(response.json);
     });
   });
-  /* 
-  describe("index (get all)", function () {
+
+  describe("getWeathers", function () {
     beforeEach(function () {
-      res = {
+      response = {
         json: sinon.spy(),
-        status: sinon.stub().returns({ end: sinon.spy() }),
+        status: sinon.stub().returns(response),
       };
-      expectedResult = [{}, {}, {}];
+      expected = [
+        {
+          temperature: 16,
+          windSpeed: 3.5,
+          humidity: 66,
+          airpressure: 55,
+          city: "Berlin",
+          country: "Germany",
+        },
+        {
+          temperature: 40,
+          windSpeed: 16,
+          humidity: 17,
+          airpressure: 56,
+          city: "Cairo",
+          country: "Egypt",
+        },
+        {
+          temperature: 32,
+          windSpeed: 21,
+          humidity: 20,
+          airpressure: 66,
+          city: "Johannesburg",
+          country: "South Africa",
+        },
+      ]; // this should be replaced with mock
     });
 
-    it(
-      "should return array of vehicles or empty array",
-      sinon.test(function () {
-        this.stub(Vehicle, "find").yields(null, expectedResult);
-        Controller.index(req, res);
-        sinon.assert.calledWith(Vehicle.find, {});
-        sinon.assert.calledWith(res.json, sinon.match.array);
-      })
-    );
+    afterEach(function () {
+      sinon.restore();
+    });
 
-    it(
-      "should return status 500 on server error",
-      sinon.test(function () {
-        this.stub(Vehicle, "find").yields(error);
-        Controller.index(req, res);
-        sinon.assert.calledWith(Vehicle.find, {});
-        sinon.assert.calledWith(res.status, 500);
-        sinon.assert.calledOnce(res.status(500).end);
-      })
-    );
+    it("should return array of weathers", function () {
+      sinon.stub(Weather, "find").yields(null, expected);
+      getWeathers(request, response);
+      sinon.assert.calledWith(Weather.find, {});
+      sinon.assert.calledWith(response.json, sinon.match.array);
+    });
+
+    it("should return empty array", function () {
+      sinon.stub(Weather, "find").yields(null, expected);
+      getWeathers(request, response);
+      sinon.assert.calledWith(Weather.find, {});
+      sinon.assert.calledWith(response.json, sinon.match.array);
+    });
+
+    it("should return status 500 on server error", function () {
+      sinon.stub(Weather, "find").yields(new Error());
+      getWeathers(request, response);
+      sinon.assert.calledWith(Weather.find, {});
+      sinon.assert.calledWith(response.status, 500);
+      sinon.assert.calledWith(response.json, {
+        error: "Server error unable to get list",
+      });
+      sinon.assert.calledOnce(response.status);
+      sinon.assert.calledOnce(response.json);
+    });
   });
 
-  describe("get", function () {
+  describe("getWeather", function () {
     beforeEach(function () {
-      res = {
+      response = {
         json: sinon.spy(),
-        status: sinon.stub().returns({ end: sinon.spy() }),
+        status: sinon.stub().returns(response),
       };
-      expectedResult = req.body;
+      expected = {
+        id: "kkkkkk",
+        temperature: 56,
+        windSpeed: 23,
+        humidity: 19,
+        airpressure: 1006,
+        zipcode: 12233,
+        city: "Lagos",
+        country: "England",
+      };
     });
-    it(
-      "should return vehicle obj",
-      sinon.test(function () {
-        this.stub(Vehicle, "findById").yields(null, expectedResult);
-        Controller.get(req, res);
-        sinon.assert.calledWith(Vehicle.findById, req.params.id);
-        sinon.assert.calledWith(
-          res.json,
-          sinon.match({ model: req.body.model })
-        );
-        sinon.assert.calledWith(
-          res.json,
-          sinon.match({ manufacturer: req.body.manufacturer })
-        );
-      })
-    );
-    it(
-      "should return 404 for non-existing vehicle id",
-      sinon.test(function () {
-        this.stub(Vehicle, "findById").yields(null, null);
-        Controller.get(req, res);
-        sinon.assert.calledWith(Vehicle.findById, req.params.id);
-        sinon.assert.calledWith(res.status, 404);
-        sinon.assert.calledOnce(res.status(404).end);
-      })
-    );
-    it(
-      "should return status 500 on server error",
-      sinon.test(function () {
-        this.stub(Vehicle, "findById").yields(error);
-        Controller.get(req, res);
-        sinon.assert.calledWith(Vehicle.findById, req.params.id);
-        sinon.assert.calledWith(res.status, 500);
-        sinon.assert.calledOnce(res.status(500).end);
-      })
-    );
+
+    it("should return Weather obj", function () {
+      sinon.stub(Weather, "findById").yields(null, expected);
+      getWeather(request, response);
+      sinon.assert.calledWith(Weather.findById, request.params.zipcode);
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ mode: req.body.model })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ manufacturer: req.body.manufacturer })
+      );
+    });
+
+    it("should return 404 for non-existing vehicle id", function () {
+      sinon.stub(Weather, "findById").yields(null, null);
+      getWeather(request, response);
+      sinon.assert.calledWith(Weather.findById, request.params.zipcode);
+      sinon.assert.calledWith(response.status, 404);
+      sinon.assert.calledOnce(response.status(404).end);
+    });
+
+    it("should return status 500 on server error", function () {
+      sinon.stub(Weather, "findById").yields(error);
+      getWeather(request, response);
+      sinon.assert.calledWith(Weather.findById, request.params.zipcode);
+      sinon.assert.calledWith(response.status, 500);
+      sinon.assert.calledOnce(response.status(500).end);
+    });
   });
 
   describe("destroy", function () {
     beforeEach(function () {
-      res = {
+      response = {
         json: sinon.spy(),
         status: sinon.stub().returns({ end: sinon.spy() }),
       };
     });
-    it(
-      "should return successful deletion message",
-      sinon.test(function () {
-        this.stub(Vehicle, "findByIdAndRemove").yields(null, {});
-        Controller.destroy(req, res);
-        sinon.assert.calledWith(Vehicle.findByIdAndRemove, req.params.id);
-        sinon.assert.calledWith(
-          res.json,
-          sinon.match({ message: "Vehicle deleted successfully!" })
-        );
-      })
-    );
-    it(
-      "should return 404 for non-existing vehicle id",
-      sinon.test(function () {
-        this.stub(Vehicle, "findByIdAndRemove").yields(null, null);
-        Controller.destroy(req, res);
-        sinon.assert.calledWith(Vehicle.findByIdAndRemove, req.params.id);
-        sinon.assert.calledWith(res.status, 404);
-        sinon.assert.calledOnce(res.status(404).end);
-      })
-    );
-    it(
-      "should return status 500 on server error",
-      sinon.test(function () {
-        this.stub(Vehicle, "findByIdAndRemove").yields(error);
-        Controller.destroy(req, res);
-        sinon.assert.calledWith(Vehicle.findByIdAndRemove, req.params.id);
-        sinon.assert.calledWith(res.status, 500);
-        sinon.assert.calledOnce(res.status(500).end);
-      })
-    );
+
+    it("should return successful deletion message", function () {
+      sinon.stub(Weather, "findByIdAndRemove").yields(null, {});
+      deleteWeather(req, res);
+      sinon.assert.calledWith(Weather.findByIdAndRemove, req.params.zipcode);
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ message: "Weather removed" })
+      );
+    });
+
+    it("should return 404 for non-existing vehicle id", function () {
+      sinon.stub(Vehicle, "findByIdAndRemove").yields(null, null);
+      deleteWeather(req, res);
+      sinon.assert.calledWith(Vehicle.findByIdAndRemove, req.params.id);
+      sinon.assert.calledWith(res.status, 404);
+      sinon.assert.calledOnce(res.status(404).end);
+    });
+
+    it("should return status 500 on server error", function () {
+      sinon.stub(Vehicle, "findByIdAndRemove").yields(error);
+      deleteWeather(req, res);
+      sinon.assert.calledWith(Weather.findByIdAndRemove, req.params.zipcode);
+      sinon.assert.calledWith(res.status, 500);
+      sinon.assert.calledOnce(res.status(500).end);
+    });
   });
 
   describe("update", function () {
@@ -212,176 +243,47 @@ describe("Weather Controller", function () {
       };
       expectedResult = req.body;
     });
-    it(
-      "should return updated vehicle obj",
-      sinon.test(function () {
-        this.stub(Vehicle, "findByIdAndUpdate").yields(null, expectedResult);
-        Controller.update(req, res);
-        sinon.assert.calledWith(
-          Vehicle.findByIdAndUpdate,
-          req.params.id,
-          req.body,
-          { new: true }
-        );
-        sinon.assert.calledWith(
-          res.json,
-          sinon.match({ model: req.body.model })
-        );
-        sinon.assert.calledWith(
-          res.json,
-          sinon.match({ manufacturer: req.body.manufacturer })
-        );
-      })
-    );
-    it(
-      "should return 404 for non-existing vehicle id",
-      sinon.test(function () {
-        this.stub(Vehicle, "findByIdAndUpdate").yields(null, null);
-        Controller.update(req, res);
-        sinon.assert.calledWith(
-          Vehicle.findByIdAndUpdate,
-          req.params.id,
-          req.body,
-          { new: true }
-        );
-        sinon.assert.calledWith(res.status, 404);
-        sinon.assert.calledOnce(res.status(404).end);
-      })
-    );
-    it(
-      "should return status 500 on server error",
-      sinon.test(function () {
-        this.stub(Vehicle, "findByIdAndUpdate").yields(error);
-        Controller.update(req, res);
-        sinon.assert.calledWith(
-          Vehicle.findByIdAndUpdate,
-          req.params.id,
-          req.body,
-          { new: true }
-        );
-        sinon.assert.calledWith(res.status, 500);
-        sinon.assert.calledOnce(res.status(500).end);
-      })
-    );
-  });
 
-  describe("assignDriver", function () {
-    const expectedDriver = { _id: req.params.driverId, available: true };
-    beforeEach(function () {
-      res = {
-        json: sinon.spy(),
-        status: sinon.stub().returns({ end: sinon.spy(), json: sinon.spy() }),
-      };
-      expectedResult = req.body;
-      expectedResult.drivers = [req.params.driverId];
+    it("should return updated vehicle obj", function () {
+      sinon.stub(Weather, "findByIdAndUpdate").yields(null, expectedResult);
+      updateWeather(req, res);
+      sinon.assert.calledWith(
+        Weather.findByIdAndUpdate,
+        req.params.zipcode,
+        req.body,
+        { new: true }
+      );
+      sinon.assert.calledWith(res.json, sinon.match({ model: req.body.model }));
+      sinon.assert.calledWith(
+        res.json,
+        sinon.match({ manufacturer: req.body.manufacturer })
+      );
     });
-    it(
-      "should return status 500 on server error (finding driver)",
-      sinon.test(function () {
-        this.stub(Driver, "findOne").yields(error);
-        Controller.assignDriver(req, res);
-        sinon.assert.calledOnce(Driver.findOne);
-        sinon.assert.calledWith(res.status, 500);
-        sinon.assert.calledOnce(res.status(500).end);
-      })
-    );
-    it(
-      "should return 404 with a message for non-existing driver",
-      sinon.test(function () {
-        this.stub(Driver, "findOne").yields(null, null);
-        Controller.assignDriver(req, res);
-        sinon.assert.calledWith(Driver.findOne, { _id: req.params.driverId });
-        sinon.assert.calledWith(res.status, 404);
-        sinon.assert.calledWith(res.status(404).json, {
-          message: "driver not found",
-        });
-      })
-    );
-    it(
-      "should return 403 with a message for unavailable driver",
-      sinon.test(function () {
-        expectedResult.available = false;
-        this.stub(Driver, "findOne").yields(null, expectedResult);
-        Controller.assignDriver(req, res);
-        sinon.assert.calledWith(Driver.findOne, { _id: req.params.driverId });
-        sinon.assert.calledWith(res.status, 403);
-        sinon.assert.calledWith(res.status(403).json, {
-          message: "driver unavailable",
-        });
-      })
-    );
-    it(
-      "should return status 500 on server error (finding vehicle)",
-      sinon.test(function () {
-        this.stub(Driver, "findOne").yields(null, expectedDriver);
-        this.stub(Vehicle, "findById").yields(error);
-        Controller.assignDriver(req, res);
-        sinon.assert.calledOnce(Vehicle.findById);
-        sinon.assert.calledWith(res.status, 500);
-        sinon.assert.calledOnce(res.status(500).end);
-      })
-    );
-    it(
-      "should return 404 with a message for non-existing vehicle",
-      sinon.test(function () {
-        this.stub(Driver, "findOne").yields(null, expectedDriver);
-        this.stub(Vehicle, "findById").yields(null, null);
-        Controller.assignDriver(req, res);
-        sinon.assert.calledWith(Driver.findOne, { _id: req.params.driverId });
-        sinon.assert.calledWith(Vehicle.findById, req.params.id);
-        sinon.assert.calledWith(res.status, 404);
-        sinon.assert.calledWith(res.status(404).json, {
-          message: "vehicle not found",
-        });
-      })
-    );
-    it(
-      "should return 403 with a message if 3 drivers already assigned",
-      sinon.test(function () {
-        expectedResult.drivers = [1, 2, 3];
-        this.stub(Driver, "findOne").yields(null, expectedDriver);
-        this.stub(Vehicle, "findById").yields(null, expectedResult);
-        Controller.assignDriver(req, res);
-        sinon.assert.calledWith(Driver.findOne, { _id: req.params.driverId });
-        sinon.assert.calledWith(Vehicle.findById, req.params.id);
-        sinon.assert.calledWith(res.status, 403);
-        sinon.assert.calledWith(res.status(403).json, {
-          message: "maximum drivers assigned, can't assign new",
-        });
-      })
-    );
-    it(
-      "should return status 500 on server error (assigning driver)",
-      sinon.test(function () {
-        this.stub(Driver, "findOne").yields(null, expectedDriver);
-        this.stub(Vehicle, "findById").yields(null, expectedResult);
-        this.stub(Vehicle, "findByIdAndUpdate").yields(error);
-        Controller.assignDriver(req, res);
-        sinon.assert.calledWith(Vehicle.findById, req.params.id);
-        sinon.assert.calledWith(res.status, 500);
-        sinon.assert.calledOnce(res.status(500).end);
-      })
-    );
-    it(
-      "should return updated vehicle obj with drivers array",
-      sinon.test(function () {
-        this.stub(Driver, "findOne").yields(null, expectedDriver);
-        this.stub(Vehicle, "findById").yields(null, expectedResult);
-        this.stub(Vehicle, "findByIdAndUpdate").yields(null, expectedResult);
-        Controller.assignDriver(req, res);
-        sinon.assert.calledWith(Driver.findOne, { _id: req.params.driverId });
-        sinon.assert.calledWith(Vehicle.findById, req.params.id);
-        sinon.assert.calledWith(
-          Vehicle.findByIdAndUpdate,
-          req.params.id,
-          { $addToSet: { drivers: req.params.driverId } },
-          { new: true }
-        );
-        sinon.assert.calledWith(
-          res.json,
-          sinon.match({ drivers: expectedResult.drivers })
-        );
-      })
-    );
-  }); */
+
+    it("should return 404 for non-existing vehicle id", function () {
+      this.stub(Vehicle, "findByIdAndUpdate").yields(null, null);
+      Controller.update(req, res);
+      sinon.assert.calledWith(
+        Vehicle.findByIdAndUpdate,
+        req.params.id,
+        req.body,
+        { new: true }
+      );
+      sinon.assert.calledWith(res.status, 404);
+      sinon.assert.calledOnce(res.status(404).end);
+    });
+
+    it("should return status 500 on server error", function () {
+      this.stub(Vehicle, "findByIdAndUpdate").yields(error);
+      Controller.update(req, res);
+      sinon.assert.calledWith(
+        Vehicle.findByIdAndUpdate,
+        req.params.id,
+        req.body,
+        { new: true }
+      );
+      sinon.assert.calledWith(res.status, 500);
+      sinon.assert.calledOnce(res.status(500).end);
+    });
+  });
 });

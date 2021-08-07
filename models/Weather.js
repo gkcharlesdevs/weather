@@ -21,6 +21,11 @@ const WeatherSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please add city value"],
   },
+  zipcode: {
+    type: Number,
+    required: [true, "Please enter zipcode"],
+    unique: true,
+  },
   country: {
     type: String,
     required: [true, "Please add country value"],
