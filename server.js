@@ -18,6 +18,10 @@ app.use(
   })
 );
 
+app.all("/", function (req, res) {
+  res.json([]);
+});
+
 app.listen(port, function () {
   console.log(`server listening on port ${port}`);
 });

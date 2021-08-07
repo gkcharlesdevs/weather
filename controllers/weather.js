@@ -24,7 +24,20 @@ exports.getWeathers = (req, res) => {
 };
 
 exports.getWeather = (req, res) => {
-  Weather.findById();
+  Weather.findById(req.params.weatherId, (error, weather) => {
+    if (error) {
+      if (error.name === "CastError") {
+        res.status(404);
+        return res.json({ error: error.message });
+      } else {
+        res.status(500);
+        return res.json({ error: error.message });
+      }
+    } else {
+      res.status(200);
+      res.json(weather);
+    }
+  });
 };
 
 exports.updateWeather = (req, res) => {};

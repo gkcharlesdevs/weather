@@ -11,17 +11,16 @@ const {
 describe("Weather Controller", function () {
   let request = {
       body: {
-        temperature: 34,
-        windSpeed: 3.4,
+        temperature: 13,
+        windSpeed: 4,
         humidity: 67,
-        airpressure: 56,
-        city: "Berlin",
-        country: "Germany",
+        airpressure: 1025,
+        city: "Nairobi",
+        zipcode: 00100,
+        country: "Kenya",
       },
       params: {
-        zipcode: "610b426aeff6df1d4ac0b25b",
-        userId: "610b40f23e4ec1192b526d79",
-        // we can also have deviceId for IOT devices in field
+        weatherId: "610e2cc2c38e103be50257db",
       },
     },
     error,
@@ -41,34 +40,64 @@ describe("Weather Controller", function () {
     });
 
     it("should return Weather object", function () {
-      expected = request.body;
+      expected = {
+        _id: "610e2cc2c38e103be50257db",
+        temperature: 13,
+        windSpeed: 4,
+        humidity: 67,
+        airpressure: 1025,
+        city: "Nairobi",
+        zipcode: 64,
+        country: "Kenya",
+        createdAt: "2021-08-07T06:48:34.855Z",
+        __v: 0,
+      };
       sinon.stub(Weather, "create").yields(null, expected);
       createWeather(request, response);
       sinon.assert.calledWith(Weather.create, request.body);
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ temperature: request.body.temperature })
+        sinon.match({ _id: expected._id })
       );
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ windSpeed: request.body.windSpeed })
+        sinon.match({ temperature: expected.temperature })
       );
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ humidity: request.body.humidity })
+        sinon.match({ windSpeed: expected.windSpeed })
       );
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ airpressure: request.body.airpressure })
+        sinon.match({ humidity: expected.humidity })
       );
+
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ city: request.body.city })
+        sinon.match({ airpressure: expected.airpressure })
       );
+
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ country: request.body.country })
+        sinon.match({ city: expected.city })
       );
+
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ zipcode: expected.zipcode })
+      );
+
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ country: expected.country })
+      );
+
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ createdAt: expected.createdAt })
+      );
+
+      sinon.assert.calledWith(response.json, sinon.match({ _v: expected._V }));
     });
 
     it("should return status 500 on server error", function () {
@@ -94,28 +123,40 @@ describe("Weather Controller", function () {
       };
       expected = [
         {
-          temperature: 16,
-          windSpeed: 3.5,
-          humidity: 66,
-          airpressure: 55,
-          city: "Berlin",
-          country: "Germany",
-        },
-        {
-          temperature: 40,
-          windSpeed: 16,
-          humidity: 17,
-          airpressure: 56,
-          city: "Cairo",
-          country: "Egypt",
-        },
-        {
-          temperature: 32,
-          windSpeed: 21,
-          humidity: 20,
-          airpressure: 66,
+          _id: "610e354a131d8e53a36f11c9",
+          temperature: 15,
+          windSpeed: 8,
+          humidity: 24,
+          airpressure: 1030,
           city: "Johannesburg",
+          zipcode: 2153,
           country: "South Africa",
+          createdAt: "2021-08-07T07:24:58.151Z",
+          __v: 0,
+        },
+        {
+          _id: "610e2cc2c38e103be50257db",
+          temperature: 13,
+          windSpeed: 4,
+          humidity: 67,
+          airpressure: 1025,
+          city: "Nairobi",
+          zipcode: 64,
+          country: "Kenya",
+          createdAt: "2021-08-07T06:48:34.855Z",
+          __v: 0,
+        },
+        {
+          _id: "610e36e60610f9564ecda91f",
+          temperature: 34,
+          windSpeed: 15,
+          humidity: 47,
+          airpressure: 1006,
+          city: "Cairo",
+          zipcode: 11511,
+          country: "Egypt",
+          createdAt: "2021-08-07T07:31:50.969Z",
+          __v: 0,
         },
       ]; // this should be replaced with mock
     });
@@ -129,13 +170,18 @@ describe("Weather Controller", function () {
       getWeathers(request, response);
       sinon.assert.calledWith(Weather.find, {});
       sinon.assert.calledWith(response.json, sinon.match.array);
+      sinon.assert.calledWith(response.json, expected);
     });
 
     it("should return empty array", function () {
+      let expected = [];
       sinon.stub(Weather, "find").yields(null, expected);
       getWeathers(request, response);
       sinon.assert.calledWith(Weather.find, {});
       sinon.assert.calledWith(response.json, sinon.match.array);
+      sinon.assert.calledWith(response.json, expected);
+      sinon.assert.calledOnce(response.status);
+      sinon.assert.calledOnce(response.json);
     });
 
     it("should return status 500 on server error", function () {
@@ -158,54 +204,112 @@ describe("Weather Controller", function () {
         status: sinon.stub().returns(response),
       };
       expected = {
-        id: "kkkkkk",
-        temperature: 56,
-        windSpeed: 23,
-        humidity: 19,
-        airpressure: 1006,
-        zipcode: 12233,
-        city: "Lagos",
-        country: "England",
+        _id: "610e2cc2c38e103be50257db",
+        temperature: 13,
+        windSpeed: 4,
+        humidity: 67,
+        airpressure: 1025,
+        city: "Nairobi",
+        zipcode: 64,
+        country: "Kenya",
+        createdAt: "2021-08-07T06:48:34.855Z",
+        __v: 0,
       };
+    });
+
+    afterEach(function () {
+      sinon.restore();
     });
 
     it("should return Weather obj", function () {
       sinon.stub(Weather, "findById").yields(null, expected);
       getWeather(request, response);
-      sinon.assert.calledWith(Weather.findById, request.params.zipcode);
+      sinon.assert.calledWith(Weather.findById, request.params.weatherId);
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ mode: req.body.model })
+        sinon.match({ _id: expected._id })
       );
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ manufacturer: req.body.manufacturer })
+        sinon.match({ temperature: expected.temperature })
       );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ windSpeed: expected.windSpeed })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ humidity: expected.humidity })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ airpressure: expected.airpressure })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ city: expected.city })
+      );
+
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ zipcode: expected.zipcode })
+      );
+
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ country: expected.country })
+      );
+
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ createdAt: expected.createdAt })
+      );
+
+      sinon.assert.calledWith(response.json, sinon.match({ _v: expected._v }));
     });
 
-    it("should return 404 for non-existing vehicle id", function () {
-      sinon.stub(Weather, "findById").yields(null, null);
+    it("should return 404 for non-existing Weather id", function () {
+      let error = new Error(
+        `The record with the id ${request.params.weatherId} does not exist`
+      );
+      error.name = "CastError";
+      sinon.stub(Weather, "findById").yields(error, null);
       getWeather(request, response);
-      sinon.assert.calledWith(Weather.findById, request.params.zipcode);
+      sinon.assert.calledWith(Weather.findById, request.params.weatherId);
       sinon.assert.calledWith(response.status, 404);
-      sinon.assert.calledOnce(response.status(404).end);
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ error: error.message })
+      );
+      sinon.assert.calledOnce(response.status);
+      sinon.assert.calledOnce(response.json);
     });
 
     it("should return status 500 on server error", function () {
+      let error = new Error();
       sinon.stub(Weather, "findById").yields(error);
       getWeather(request, response);
-      sinon.assert.calledWith(Weather.findById, request.params.zipcode);
+      sinon.assert.calledWith(Weather.findById, request.params.weatherId);
       sinon.assert.calledWith(response.status, 500);
-      sinon.assert.calledOnce(response.status(500).end);
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ error: error.message })
+      );
+      sinon.assert.calledOnce(response.status);
+      sinon.assert.calledOnce(response.json);
     });
   });
 
-  describe("destroy", function () {
+  describe("deleteWeather", function () {
     beforeEach(function () {
       response = {
         json: sinon.spy(),
-        status: sinon.stub().returns({ end: sinon.spy() }),
+        status: sinon.stub().returns(response),
       };
+    });
+
+    afterEach(function () {
+      sinon.restore();
     });
 
     it("should return successful deletion message", function () {
@@ -235,13 +339,17 @@ describe("Weather Controller", function () {
     });
   });
 
-  describe("update", function () {
+  describe("updateWeather", function () {
     beforeEach(function () {
       res = {
         json: sinon.spy(),
         status: sinon.stub().returns({ end: sinon.spy() }),
       };
       expectedResult = req.body;
+    });
+
+    afterEach(function () {
+      sinon.restore();
     });
 
     it("should return updated vehicle obj", function () {
