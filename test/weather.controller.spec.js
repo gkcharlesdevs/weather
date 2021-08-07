@@ -313,85 +313,180 @@ describe("Weather Controller", function () {
     });
 
     it("should return successful deletion message", function () {
-      sinon.stub(Weather, "findByIdAndRemove").yields(null, {});
-      deleteWeather(req, res);
-      sinon.assert.calledWith(Weather.findByIdAndRemove, req.params.zipcode);
+      sinon.stub(Weather, "findByIdAndDelete").yields(null, {});
+      deleteWeather(request, response);
+      sinon.assert.calledWith(
+        Weather.findByIdAndDelete,
+        request.params.weatherId
+      );
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ message: "Weather removed" })
+        sinon.match({ message: "Weather record removed" })
       );
     });
 
-    it("should return 404 for non-existing vehicle id", function () {
-      sinon.stub(Vehicle, "findByIdAndRemove").yields(null, null);
-      deleteWeather(req, res);
-      sinon.assert.calledWith(Vehicle.findByIdAndRemove, req.params.id);
-      sinon.assert.calledWith(res.status, 404);
-      sinon.assert.calledOnce(res.status(404).end);
+    it("should return 404 for non-existing weather id", function () {
+      let error = new Error(
+        `The weather record with the id ${request.params.weatherId} does not exist`
+      );
+      error.name = "CastError";
+      sinon.stub(Weather, "findByIdAndDelete").yields(error, null);
+      deleteWeather(request, response);
+      sinon.assert.calledWith(
+        Weather.findByIdAndDelete,
+        request.params.weatherId
+      );
+      sinon.assert.calledWith(response.status, 404);
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ error: error.message })
+      );
+      sinon.assert.calledOnce(response.status);
+      sinon.assert.calledOnce(response.json);
     });
 
     it("should return status 500 on server error", function () {
-      sinon.stub(Vehicle, "findByIdAndRemove").yields(error);
-      deleteWeather(req, res);
-      sinon.assert.calledWith(Weather.findByIdAndRemove, req.params.zipcode);
-      sinon.assert.calledWith(res.status, 500);
-      sinon.assert.calledOnce(res.status(500).end);
+      let error = new Error();
+      sinon.stub(Weather, "findByIdAndDelete").yields(error, null);
+      deleteWeather(request, response);
+      sinon.assert.calledWith(
+        Weather.findByIdAndDelete,
+        request.params.weatherId
+      );
+      sinon.assert.calledWith(response.status, 500);
+      sinon.assert.calledOnce(response.status);
+      sinon.assert.calledOnce(response.json);
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ error: error.message })
+      );
     });
   });
 
   describe("updateWeather", function () {
     beforeEach(function () {
-      res = {
+      response = {
         json: sinon.spy(),
-        status: sinon.stub().returns({ end: sinon.spy() }),
+        status: sinon.stub().returns(response),
       };
-      expectedResult = req.body;
+      expected = request.body;
     });
 
     afterEach(function () {
       sinon.restore();
     });
 
-    it("should return updated vehicle obj", function () {
-      sinon.stub(Weather, "findByIdAndUpdate").yields(null, expectedResult);
-      updateWeather(req, res);
+    it("should return updated Weather object", function () {
+      let request = {
+        body: {
+          temperature: 34,
+          windSpeed: 5,
+          humidity: 80,
+        },
+        params: {
+          weatherId: "610e2cc2c38e103be50257db",
+        },
+      };
+
+      let expected = {
+        _id: "610e2cc2c38e103be50257db",
+        temperature: 34,
+        windSpeed: 5,
+        humidity: 80,
+        airpressure: 1025,
+        city: "Nairobi",
+        zipcode: 00100,
+        country: "Kenya",
+        createdAt: "2021-08-07T06:48:34.855Z",
+        _V: 0,
+      };
+      sinon.stub(Weather, "findByIdAndUpdate").yields(null, expected);
+      updateWeather(request, response);
       sinon.assert.calledWith(
         Weather.findByIdAndUpdate,
-        req.params.zipcode,
-        req.body,
+        request.params.weatherId,
+        request.body,
         { new: true }
       );
-      sinon.assert.calledWith(res.json, sinon.match({ model: req.body.model }));
       sinon.assert.calledWith(
-        res.json,
-        sinon.match({ manufacturer: req.body.manufacturer })
+        response.json,
+        sinon.match({ _id: expected._id })
       );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ temperature: expected.temperature })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ windSpeed: expected.windSpeed })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ humidity: expected.humidity })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ airpressure: expected.airpressure })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ city: expected.city })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ zipcode: expected.zipcode })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ country: expected.country })
+      );
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ createdAt: expected.createdAt })
+      );
+      sinon.assert.calledWith(response.json, sinon.match({ _v: expected._v }));
+      sinon.assert.calledWith(response.status, 200);
     });
 
-    it("should return 404 for non-existing vehicle id", function () {
-      this.stub(Vehicle, "findByIdAndUpdate").yields(null, null);
-      Controller.update(req, res);
-      sinon.assert.calledWith(
-        Vehicle.findByIdAndUpdate,
-        req.params.id,
-        req.body,
-        { new: true }
+    it("should return 404 for non-existing weather id", function () {
+      let error = new Error(
+        `The weather record with the id ${request.params.weatherId} does not exist`
       );
-      sinon.assert.calledWith(res.status, 404);
-      sinon.assert.calledOnce(res.status(404).end);
+      error.name = "CastError";
+      sinon.stub(Weather, "findByIdAndUpdate").yields(error, null);
+      updateWeather(request, response);
+      sinon.assert.calledWith(
+        Weather.findByIdAndUpdate,
+        request.params.weatherId,
+        request.body,
+        sinon.match({ new: true })
+      );
+      sinon.assert.calledWith(response.status, 404);
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ error: error.message })
+      );
+      sinon.assert.calledOnce(response.status);
+      sinon.assert.calledOnce(response.json);
     });
 
     it("should return status 500 on server error", function () {
-      this.stub(Vehicle, "findByIdAndUpdate").yields(error);
-      Controller.update(req, res);
+      let error = new Error();
+      sinon.stub(Weather, "findByIdAndUpdate").yields(error, null);
+      updateWeather(request, response);
       sinon.assert.calledWith(
-        Vehicle.findByIdAndUpdate,
-        req.params.id,
-        req.body,
-        { new: true }
+        Weather.findByIdAndUpdate,
+        request.params.weatherId,
+        request.body,
+        sinon.match({ new: true })
       );
-      sinon.assert.calledWith(res.status, 500);
-      sinon.assert.calledOnce(res.status(500).end);
+      sinon.assert.calledWith(response.status, 500);
+      sinon.assert.calledOnce(response.status);
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({ error: error.message })
+      );
+      sinon.assert.calledOnce(response.json);
     });
   });
 });
