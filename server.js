@@ -10,6 +10,11 @@ const port = 3300;
 // connection to mongodb database server
 db();
 
+// Routes files
+const weathers = require("./routes/weather");
+//const auth = require("./routes/auth");
+//const users = require("./routes/users");
+
 // middleware
 app.use(express.json({}));
 app.use(
@@ -18,9 +23,11 @@ app.use(
   })
 );
 
-app.all("/", function (req, res) {
-  res.json([]);
-});
+// Mount routers
+
+app.use("/api/v1/weathers", weathers);
+//app.use("/api/v1/auth", auth);
+//app.use("/api/v1/users", users);
 
 app.listen(port, function () {
   console.log(`server listening on port ${port}`);

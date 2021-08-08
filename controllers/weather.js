@@ -79,3 +79,7 @@ exports.deleteWeather = (req, res) => {
     }
   });
 };
+
+exports.getWeatherByCity = (req, res) => {
+  Weather.find({});
+};
