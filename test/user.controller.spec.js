@@ -1,14 +1,14 @@
 const sinon = require("sinon");
 const Weather = require("../models/Weather");
 const {
-  createWeather,
-  getWeathers,
-  getWeather,
-  updateWeather,
-  deleteWeather,
-} = require("../controllers/weather");
+  createUser,
+  getUser,
+  getUsers,
+  updateUser,
+  deleteUser,
+} = require("../controllers/user");
 
-describe("Weather Controller", function () {
+describe("User Controller", function () {
   let request = {
       body: {
         temperature: 13,
