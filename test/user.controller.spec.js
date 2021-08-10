@@ -1,5 +1,5 @@
 const sinon = require("sinon");
-const Weather = require("../models/Weather");
+const User = require("../models/User");
 const {
   createUser,
   getUser,
@@ -11,23 +11,19 @@ const {
 describe("User Controller", function () {
   let request = {
       body: {
-        temperature: 13,
-        windSpeed: 4,
-        humidity: 67,
-        airpressure: 1025,
-        city: "Nairobi",
-        zipcode: 00100,
-        country: "Kenya",
+        name: "Josiah Mensah",
+        email: "josiah.mensah@itlock.com",
+        role: "user",
       },
       params: {
-        weatherId: "610e2cc2c38e103be50257db",
+        userId: "610e2cc2c38e103be50257db",
       },
     },
     error,
     response = {},
     expected;
 
-  describe("createWeather", function () {
+  describe("createUser", function () {
     beforeEach(function () {
       response = {
         json: sinon.spy(),
@@ -39,83 +35,61 @@ describe("User Controller", function () {
       sinon.restore();
     });
 
-    it("should return Weather object", function () {
+    it("should return user object", function () {
       expected = {
         _id: "610e2cc2c38e103be50257db",
-        temperature: 13,
-        windSpeed: 4,
-        humidity: 67,
-        airpressure: 1025,
-        city: "Nairobi",
-        zipcode: 64,
-        country: "Kenya",
+        name: "Josiah Mensah",
+        email: "josiah.mensah@itlock.com",
+        role: "user",
         createdAt: "2021-08-07T06:48:34.855Z",
         __v: 0,
       };
-      sinon.stub(Weather, "create").yields(null, expected);
-      createWeather(request, response);
-      sinon.assert.calledWith(Weather.create, request.body);
+      sinon.stub(User, "create").yields(null, expected);
+      createUser(request, response);
+      sinon.assert.calledWith(User.create, request.body);
+      sinon.assert.calledWith(response.status, 200);
       sinon.assert.calledWith(
         response.json,
         sinon.match({ _id: expected._id })
       );
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ temperature: expected.temperature })
+        sinon.match({ name: expected.name })
       );
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ windSpeed: expected.windSpeed })
+        sinon.match({ email: expected.email })
       );
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ humidity: expected.humidity })
+        sinon.match({ role: expected.role })
       );
-
-      sinon.assert.calledWith(
-        response.json,
-        sinon.match({ airpressure: expected.airpressure })
-      );
-
-      sinon.assert.calledWith(
-        response.json,
-        sinon.match({ city: expected.city })
-      );
-
-      sinon.assert.calledWith(
-        response.json,
-        sinon.match({ zipcode: expected.zipcode })
-      );
-
-      sinon.assert.calledWith(
-        response.json,
-        sinon.match({ country: expected.country })
-      );
-
       sinon.assert.calledWith(
         response.json,
         sinon.match({ createdAt: expected.createdAt })
       );
 
-      sinon.assert.calledWith(response.json, sinon.match({ _v: expected._V }));
+      sinon.assert.calledWith(response.json, sinon.match({ _v: expected._v }));
+      sinon.assert.calledOnce(response.json);
+      sinon.assert.calledOnce(response.status);
     });
 
     it("should return status 500 on server error", function () {
-      sinon
-        .stub(Weather, "create")
-        .yields(new Error("Could not create weather")); // For the error message check mongoose documentation
-      createWeather(request, response);
-      sinon.assert.calledWith(Weather.create, request.body);
+      let error = new Error();
+      sinon.stub(User, "create").yields(error); // For the error message check mongoose documentation
+      createUser(request, response);
+      sinon.assert.calledWith(User.create, request.body);
       sinon.assert.calledWith(response.status, 500);
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ error: "Weather could not be created" })
+        sinon.match({ error: error.message })
       );
       sinon.assert.calledOnce(response.json);
+      sinon.assert.calledOnce(response.status);
     });
   });
 
-  describe("getWeathers", function () {
+  describe("getUsers", function () {
     beforeEach(function () {
       response = {
         json: sinon.spy(),
@@ -124,37 +98,25 @@ describe("User Controller", function () {
       expected = [
         {
           _id: "610e354a131d8e53a36f11c9",
-          temperature: 15,
-          windSpeed: 8,
-          humidity: 24,
-          airpressure: 1030,
-          city: "Johannesburg",
-          zipcode: 2153,
-          country: "South Africa",
+          name: "Donogan Richie",
+          email: "donogan.richie@outlook.com",
+          role: "user",
           createdAt: "2021-08-07T07:24:58.151Z",
           __v: 0,
         },
         {
           _id: "610e2cc2c38e103be50257db",
-          temperature: 13,
-          windSpeed: 4,
-          humidity: 67,
-          airpressure: 1025,
-          city: "Nairobi",
-          zipcode: 64,
-          country: "Kenya",
+          name: "Blessing Kinks",
+          email: "blessing.kinks@itlock.com",
+          role: "user",
           createdAt: "2021-08-07T06:48:34.855Z",
           __v: 0,
         },
         {
           _id: "610e36e60610f9564ecda91f",
-          temperature: 34,
-          windSpeed: 15,
-          humidity: 47,
-          airpressure: 1006,
-          city: "Cairo",
-          zipcode: 11511,
-          country: "Egypt",
+          name: "Uchia Hush",
+          email: "uchia.hush@itlock.com",
+          role: "user",
           createdAt: "2021-08-07T07:31:50.969Z",
           __v: 0,
         },
@@ -165,19 +127,21 @@ describe("User Controller", function () {
       sinon.restore();
     });
 
-    it("should return array of weathers", function () {
-      sinon.stub(Weather, "find").yields(null, expected);
-      getWeathers(request, response);
-      sinon.assert.calledWith(Weather.find, {});
+    it("should return array of users", function () {
+      sinon.stub(User, "find").yields(null, expected);
+      getUsers(request, response);
+      sinon.assert.calledWith(User.find, {});
       sinon.assert.calledWith(response.json, sinon.match.array);
       sinon.assert.calledWith(response.json, expected);
+      sinon.assert.calledOnce(response.json);
+      sinon.assert.calledOnce(response.status);
     });
 
     it("should return empty array", function () {
       let expected = [];
-      sinon.stub(Weather, "find").yields(null, expected);
-      getWeathers(request, response);
-      sinon.assert.calledWith(Weather.find, {});
+      sinon.stub(User, "find").yields(null, expected);
+      getUsers(request, response);
+      sinon.assert.calledWith(User.find, {});
       sinon.assert.calledWith(response.json, sinon.match.array);
       sinon.assert.calledWith(response.json, expected);
       sinon.assert.calledOnce(response.status);
@@ -185,19 +149,23 @@ describe("User Controller", function () {
     });
 
     it("should return status 500 on server error", function () {
-      sinon.stub(Weather, "find").yields(new Error());
-      getWeathers(request, response);
-      sinon.assert.calledWith(Weather.find, {});
+      let error = new Error();
+      sinon.stub(User, "find").yields(error);
+      getUsers(request, response);
+      sinon.assert.calledWith(User.find, {});
       sinon.assert.calledWith(response.status, 500);
-      sinon.assert.calledWith(response.json, {
-        error: "Server error unable to get list",
-      });
+      sinon.assert.calledWith(
+        response.json,
+        sinon.match({
+          error: error.message,
+        })
+      );
       sinon.assert.calledOnce(response.status);
       sinon.assert.calledOnce(response.json);
     });
   });
 
-  describe("getWeather", function () {
+  describe("getUser", function () {
     beforeEach(function () {
       response = {
         json: sinon.spy(),
@@ -205,13 +173,9 @@ describe("User Controller", function () {
       };
       expected = {
         _id: "610e2cc2c38e103be50257db",
-        temperature: 13,
-        windSpeed: 4,
-        humidity: 67,
-        airpressure: 1025,
-        city: "Nairobi",
-        zipcode: 64,
-        country: "Kenya",
+        name: "Blessing Kinks",
+        email: "blessing.kinks@itlock.com",
+        role: "user",
         createdAt: "2021-08-07T06:48:34.855Z",
         __v: 0,
       };
@@ -221,43 +185,25 @@ describe("User Controller", function () {
       sinon.restore();
     });
 
-    it("should return Weather obj", function () {
-      sinon.stub(Weather, "findById").yields(null, expected);
-      getWeather(request, response);
-      sinon.assert.calledWith(Weather.findById, request.params.weatherId);
+    it("should return user object", function () {
+      sinon.stub(User, "findById").yields(null, expected);
+      getUser(request, response);
+      sinon.assert.calledWith(User.findById, request.params.userId);
       sinon.assert.calledWith(
         response.json,
         sinon.match({ _id: expected._id })
       );
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ temperature: expected.temperature })
+        sinon.match({ name: expected.name })
       );
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ windSpeed: expected.windSpeed })
+        sinon.match({ email: expected.email })
       );
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ humidity: expected.humidity })
-      );
-      sinon.assert.calledWith(
-        response.json,
-        sinon.match({ airpressure: expected.airpressure })
-      );
-      sinon.assert.calledWith(
-        response.json,
-        sinon.match({ city: expected.city })
-      );
-
-      sinon.assert.calledWith(
-        response.json,
-        sinon.match({ zipcode: expected.zipcode })
-      );
-
-      sinon.assert.calledWith(
-        response.json,
-        sinon.match({ country: expected.country })
+        sinon.match({ role: expected.role })
       );
 
       sinon.assert.calledWith(
@@ -266,16 +212,19 @@ describe("User Controller", function () {
       );
 
       sinon.assert.calledWith(response.json, sinon.match({ _v: expected._v }));
+      sinon.assert.calledWith(response.status, 200);
+      sinon.assert.calledOnce(response.json);
+      sinon.assert.calledOnce(response.status);
     });
 
-    it("should return 404 for non-existing Weather id", function () {
+    it("should return 404 for non-existing User id", function () {
       let error = new Error(
         `The record with the id ${request.params.weatherId} does not exist`
       );
       error.name = "CastError";
-      sinon.stub(Weather, "findById").yields(error, null);
-      getWeather(request, response);
-      sinon.assert.calledWith(Weather.findById, request.params.weatherId);
+      sinon.stub(User, "findById").yields(error, null);
+      getUser(request, response);
+      sinon.assert.calledWith(User.findById, request.params.userId);
       sinon.assert.calledWith(response.status, 404);
       sinon.assert.calledWith(
         response.json,
@@ -287,9 +236,9 @@ describe("User Controller", function () {
 
     it("should return status 500 on server error", function () {
       let error = new Error();
-      sinon.stub(Weather, "findById").yields(error);
-      getWeather(request, response);
-      sinon.assert.calledWith(Weather.findById, request.params.weatherId);
+      sinon.stub(User, "findById").yields(error);
+      getUser(request, response);
+      sinon.assert.calledWith(User.findById, request.params.userId);
       sinon.assert.calledWith(response.status, 500);
       sinon.assert.calledWith(
         response.json,
@@ -300,7 +249,7 @@ describe("User Controller", function () {
     });
   });
 
-  describe("deleteWeather", function () {
+  describe("deleteUser", function () {
     beforeEach(function () {
       response = {
         json: sinon.spy(),
@@ -312,30 +261,26 @@ describe("User Controller", function () {
       sinon.restore();
     });
 
-    it("should return successful deletion message", function () {
-      sinon.stub(Weather, "findByIdAndDelete").yields(null, {});
-      deleteWeather(request, response);
-      sinon.assert.calledWith(
-        Weather.findByIdAndDelete,
-        request.params.weatherId
-      );
+    it("should return the deleted user", function () {
+      sinon.stub(User, "findByIdAndDelete").yields(null, {});
+      deleteUser(request, response);
+      sinon.assert.calledWith(User.findByIdAndDelete, request.params.userId);
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ message: "Weather record removed" })
+        sinon.match({
+          message: `User with the ${request.params.userId} deleted`,
+        })
       );
     });
 
-    it("should return 404 for non-existing weather id", function () {
+    it("should return 404 for non-existing user id", function () {
       let error = new Error(
-        `The weather record with the id ${request.params.weatherId} does not exist`
+        `The user record with the id ${request.params.userId} does not exist`
       );
       error.name = "CastError";
-      sinon.stub(Weather, "findByIdAndDelete").yields(error, null);
-      deleteWeather(request, response);
-      sinon.assert.calledWith(
-        Weather.findByIdAndDelete,
-        request.params.weatherId
-      );
+      sinon.stub(User, "findByIdAndDelete").yields(error, null);
+      deleteUser(request, response);
+      sinon.assert.calledWith(User.findByIdAndDelete, request.params.userId);
       sinon.assert.calledWith(response.status, 404);
       sinon.assert.calledWith(
         response.json,
@@ -347,12 +292,9 @@ describe("User Controller", function () {
 
     it("should return status 500 on server error", function () {
       let error = new Error();
-      sinon.stub(Weather, "findByIdAndDelete").yields(error, null);
-      deleteWeather(request, response);
-      sinon.assert.calledWith(
-        Weather.findByIdAndDelete,
-        request.params.weatherId
-      );
+      sinon.stub(User, "findByIdAndDelete").yields(error, null);
+      deleteUser(request, response);
+      sinon.assert.calledWith(User.findByIdAndDelete, request.params.userId);
       sinon.assert.calledWith(response.status, 500);
       sinon.assert.calledOnce(response.status);
       sinon.assert.calledOnce(response.json);
@@ -376,12 +318,11 @@ describe("User Controller", function () {
       sinon.restore();
     });
 
-    it("should return updated Weather object", function () {
+    it("should return updated User object", function () {
       let request = {
         body: {
-          temperature: 34,
-          windSpeed: 5,
-          humidity: 80,
+          name: "Kingley Impela",
+          email: "kingley.impela@out.com",
         },
         params: {
           weatherId: "610e2cc2c38e103be50257db",
@@ -390,21 +331,17 @@ describe("User Controller", function () {
 
       let expected = {
         _id: "610e2cc2c38e103be50257db",
-        temperature: 34,
-        windSpeed: 5,
-        humidity: 80,
-        airpressure: 1025,
-        city: "Nairobi",
-        zipcode: 00100,
-        country: "Kenya",
+        name: "Kingley Impela",
+        email: "kingley.impela@out.com",
+        role: "user",
         createdAt: "2021-08-07T06:48:34.855Z",
         _V: 0,
       };
-      sinon.stub(Weather, "findByIdAndUpdate").yields(null, expected);
-      updateWeather(request, response);
+      sinon.stub(User, "findByIdAndUpdate").yields(null, expected);
+      updateUser(request, response);
       sinon.assert.calledWith(
-        Weather.findByIdAndUpdate,
-        request.params.weatherId,
+        User.findByIdAndUpdate,
+        request.params.userId,
         request.body,
         { new: true }
       );
@@ -414,50 +351,37 @@ describe("User Controller", function () {
       );
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ temperature: expected.temperature })
+        sinon.match({ name: expected.name })
       );
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ windSpeed: expected.windSpeed })
+        sinon.match({ email: expected.email })
       );
       sinon.assert.calledWith(
         response.json,
-        sinon.match({ humidity: expected.humidity })
+        sinon.match({ role: expected.role })
       );
-      sinon.assert.calledWith(
-        response.json,
-        sinon.match({ airpressure: expected.airpressure })
-      );
-      sinon.assert.calledWith(
-        response.json,
-        sinon.match({ city: expected.city })
-      );
-      sinon.assert.calledWith(
-        response.json,
-        sinon.match({ zipcode: expected.zipcode })
-      );
-      sinon.assert.calledWith(
-        response.json,
-        sinon.match({ country: expected.country })
-      );
+
       sinon.assert.calledWith(
         response.json,
         sinon.match({ createdAt: expected.createdAt })
       );
       sinon.assert.calledWith(response.json, sinon.match({ _v: expected._v }));
       sinon.assert.calledWith(response.status, 200);
+      sinon.assert.calledOnce(response.status);
+      sinon.assert.calledOnce(response.json);
     });
 
-    it("should return 404 for non-existing weather id", function () {
+    it("should return 404 for non-existing user id", function () {
       let error = new Error(
-        `The weather record with the id ${request.params.weatherId} does not exist`
+        `The user record with the id ${request.params.userId} does not exist`
       );
       error.name = "CastError";
-      sinon.stub(Weather, "findByIdAndUpdate").yields(error, null);
-      updateWeather(request, response);
+      sinon.stub(User, "findByIdAndUpdate").yields(error, null);
+      updateUser(request, response);
       sinon.assert.calledWith(
-        Weather.findByIdAndUpdate,
-        request.params.weatherId,
+        User.findByIdAndUpdate,
+        request.params.userId,
         request.body,
         sinon.match({ new: true })
       );
@@ -472,11 +396,11 @@ describe("User Controller", function () {
 
     it("should return status 500 on server error", function () {
       let error = new Error();
-      sinon.stub(Weather, "findByIdAndUpdate").yields(error, null);
-      updateWeather(request, response);
+      sinon.stub(User, "findByIdAndUpdate").yields(error, null);
+      updateUser(request, response);
       sinon.assert.calledWith(
-        Weather.findByIdAndUpdate,
-        request.params.weatherId,
+        User.findByIdAndUpdate,
+        request.params.userId,
         request.body,
         sinon.match({ new: true })
       );
