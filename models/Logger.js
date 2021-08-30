@@ -10,9 +10,13 @@ const LoggerSchema = new mongose.Schema({
     type: String,
     required: [true, "No city included"],
   },
-  city: {
-    type: String,
-    required: [true, "Please add city value"],
+  latitude: {
+    type: Number,
+    required: [true, "Please add the latitude"],
+  },
+  longitude: {
+    type: Number,
+    required: [true, "Please add the longitude"],
   },
   createdAt: {
     type: Date,

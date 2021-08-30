@@ -21,6 +21,7 @@ describe("Weather Controller", function () {
       },
       params: {
         weatherId: "610e2cc2c38e103be50257db",
+        loggerId: "loggerId",
       },
     },
     error,

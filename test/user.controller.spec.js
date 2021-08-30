@@ -305,7 +305,7 @@ describe("User Controller", function () {
     });
   });
 
-  describe("updateWeather", function () {
+  describe("updateUser", function () {
     beforeEach(function () {
       response = {
         json: sinon.spy(),
@@ -325,7 +325,7 @@ describe("User Controller", function () {
           email: "kingley.impela@out.com",
         },
         params: {
-          weatherId: "610e2cc2c38e103be50257db",
+          userId: "610e2cc2c38e103be50257db",
         },
       };
 
